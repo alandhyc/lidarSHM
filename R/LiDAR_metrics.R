@@ -77,7 +77,7 @@ LiDAR_metrics<-function(las,
 
       q99<-pixel_metrics(las_filtered,
                          res = res,
-                         func = q99_f(z = Z))
+                         func = ~q99_f(z = Z))
 
       std_metrics<-c(std_metrics,q99)
 
@@ -109,7 +109,7 @@ LiDAR_metrics<-function(las,
     cov<-pixel_metrics(
       las,
       res = 0.25, #temp
-      func = cov_f(z = Z,cov_grid = 0.25) #temp
+      func = ~cov_f(z = Z,cov_grid = 0.25) #temp
     )
 
     cov<-terra::resample(cov,vci2,method = "sum")
@@ -131,7 +131,7 @@ LiDAR_metrics<-function(las,
 
       rough<-pixel_metrics(
         las,
-        func = roughness_metrics_f(z = Z, shannon_cut = c(-1,2,5,10,15,35)), #temp
+        func = ~roughness_metrics_f(z = Z, shannon_cut = c(-1,2,5,10,15,35)), #temp
         res = res)
 
       rough<-terra::resample(rough,q99)
@@ -146,7 +146,7 @@ LiDAR_metrics<-function(las,
     # vox_expr<-substitute(vox_f(vox_res),list(vox_res = vox_res))
 
     las_vox<-voxel_metrics(las_nonground,
-                           func = vox_f(vox_res = 0.5), #temp
+                           func = ~vox_f(vox_res = 0.5), #temp
                            res = vox_res)
 
     las_vox<-LAS(las_vox)
@@ -173,7 +173,7 @@ LiDAR_metrics<-function(las,
 
     if(nrow(L1@data)!=0){
       vlayer_L1<-voxel_metrics(L1,
-                               vox_f(vox_res = 0.5), #temp
+                               ~vox_f(vox_res = 0.5), #temp
                                res = vox_res)
       vlayer_L1<-LAS(vlayer_L1)
       vlayer_L1<-pixel_metrics(vlayer_L1,~list(vlayer_L1=sum(vol)),res = res)
@@ -187,7 +187,7 @@ LiDAR_metrics<-function(las,
 
     if(nrow(L2@data)!=0){
       vlayer_L2<-voxel_metrics(L2,
-                               vox_f(vox_res = 0.5), #temp
+                               ~vox_f(vox_res = 0.5), #temp
                                res = vox_res)
       vlayer_L2<-LAS(vlayer_L2)
       vlayer_L2<-pixel_metrics(vlayer_L2,~list(vlayer_L2=sum(vol)),res = res)
@@ -201,7 +201,7 @@ LiDAR_metrics<-function(las,
 
     if(nrow(L3@data)!=0){
       vlayer_L3<-voxel_metrics(L3,
-                               vox_f(vox_res = 0.5), #temp
+                               ~vox_f(vox_res = 0.5), #temp
                                res = vox_res)
       vlayer_L3<-LAS(vlayer_L3)
       vlayer_L3<-pixel_metrics(vlayer_L3,~list(vlayer_L3=sum(vol)),res = res)
@@ -229,8 +229,8 @@ LiDAR_metrics<-function(las,
     if(nrow(L1@data)!=0){
       mean_sd_L1<-pixel_metrics(L1,
                                 res = res,
-                                func = ~list(meanH = mean(z,na.rm = T),
-                                             sdH = sd(z,na.rm = T)))
+                                func = ~list(meanH = mean(Z,na.rm = T),
+                                             sdH = sd(Z,na.rm = T)))
     } else {
       mean_sd_L1<-empty_raster
     }
@@ -240,8 +240,8 @@ LiDAR_metrics<-function(las,
     if(nrow(L2@data)!=0){
       mean_sd_L2<-pixel_metrics(L2,
                                 res = res,
-                                func = ~list(meanH = mean(z,na.rm = T),
-                                             sdH = sd(z,na.rm = T)))
+                                func = ~list(meanH = mean(Z,na.rm = T),
+                                             sdH = sd(Z,na.rm = T)))
     } else {
       mean_sd_L2<-empty_raster
     }
@@ -251,15 +251,15 @@ LiDAR_metrics<-function(las,
     if(nrow(L3@data)!=0){
       mean_sd_L3<-pixel_metrics(L3,
                                 res = res,
-                                func = ~list(meanH = mean(z,na.rm = T),
-                                             sdH = sd(z,na.rm = T)))
+                                func = ~list(meanH = mean(Z,na.rm = T),
+                                             sdH = sd(Z,na.rm = T)))
     } else {
       mean_sd_L3<-empty_raster
     }
 
-    mean_sd_L1<-resample(mean_sd_L1,q99)
-    mean_sd_L2<-resample(mean_sd_L2,q99)
-    mean_sd_L3<-resample(mean_sd_L3,q99)
+    mean_sd_L1<-terra::resample(mean_sd_L1,q99)
+    mean_sd_L2<-terra::resample(mean_sd_L2,q99)
+    mean_sd_L3<-terra::resample(mean_sd_L3,q99)
 
     names(mean_sd_L1)<-paste0(names(mean_sd_L1),"_L1")
     names(mean_sd_L2)<-paste0(names(mean_sd_L2),"_L2")
