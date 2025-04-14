@@ -108,8 +108,8 @@ LiDAR_metrics<-function(las,
 
     cov<-pixel_metrics(
       las,
-      res = cov_grid,
-      func = cov_f(z = Z,cov_grid = 0.25)
+      res = 0.25, #temp
+      func = cov_f(z = Z,cov_grid = 0.25) #temp
     )
 
     cov<-terra::resample(cov,vci2,method = "sum")
