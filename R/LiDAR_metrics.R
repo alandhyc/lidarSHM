@@ -89,11 +89,11 @@ LiDAR_metrics<-function(las,
       # vci15exp<-substitute(lidR::VCI(z,zmax,by),list(zmax = zmax, by = 15))
       # vci20exp<-substitute(lidR::VCI(z,zmax,by),list(zmax = zmax, by = 20))
 
-      vci2<-pixel_metrics(las_filtered,VCI(z=Z,by = 2,zmax = 35),res = res) #temp
-      vci5<-pixel_metrics(las_filtered,VCI(z=Z,by = 5,zmax = 35),res = res) #temp
-      vci10<-pixel_metrics(las_filtered,VCI(z=Z,by = 10,zmax = 35),res = res) #temp
-      vci15<-pixel_metrics(las_filtered,VCI(z=Z,by = 15,zmax = 35),res = res) #temp
-      vci20<-pixel_metrics(las_filtered,VCI(z=Z,by = 20,zmax = 35),res = res) #temp
+      vci2<-pixel_metrics(las_filtered,lidR::VCI(z=Z,by = 2,zmax = 35),res = res) #temp
+      vci5<-pixel_metrics(las_filtered,lidR::VCI(z=Z,by = 5,zmax = 35),res = res) #temp
+      vci10<-pixel_metrics(las_filtered,lidR::VCI(z=Z,by = 10,zmax = 35),res = res) #temp
+      vci15<-pixel_metrics(las_filtered,lidR::VCI(z=Z,by = 15,zmax = 35),res = res) #temp
+      vci20<-pixel_metrics(las_filtered,lidR::VCI(z=Z,by = 20,zmax = 35),res = res) #temp
 
       VCI_combined<-c(vci2,vci5,vci10,vci15,vci20)
       names(VCI_combined)<-paste0("VCI_",c(2,5,10,15,20))
@@ -287,7 +287,7 @@ LiDAR_metrics<-function(las,
     #L1
 
     if(nrow(L1@data)!=0){
-      vci_L1<-pixel_metrics(L1,func = VCI(z = Z,zmax = 1,by = 0.2),res = res) #temp
+      vci_L1<-pixel_metrics(L1,func = lidR::VCI(z = Z,zmax = 1,by = 0.2),res = res) #temp
     } else {
       vci_L1<-empty_raster
     }
@@ -295,7 +295,7 @@ LiDAR_metrics<-function(las,
     #L2
 
     if(nrow(L2@data)!=0){
-      vci_L2<-pixel_metrics(L2,func = VCI(z = Z,zmax = 10,by = 1.8),res = res) #temp
+      vci_L2<-pixel_metrics(L2,func = lidR::VCI(z = Z,zmax = 10,by = 1.8),res = res) #temp
     } else {
       vci_L2<-empty_raster
     }
@@ -303,7 +303,7 @@ LiDAR_metrics<-function(las,
     #L3
 
     if(nrow(L3@data)!=0){
-      vci_L3<-pixel_metrics(L3,func = VCI(z = Z,zmax = 35,by = 1.8),res = res) #temp
+      vci_L3<-pixel_metrics(L3,func = lidR::VCI(z = Z,zmax = 35,by = 1.8),res = res) #temp
     } else {
       vci_L3<-empty_raster
     }
