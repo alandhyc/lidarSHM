@@ -16,7 +16,8 @@ LiDAR_metrics(
   vox_res = 0.5,
   L1_range = c(0, 1),
   L2_range = c(1, 10),
-  L3_range = c(10, 35)
+  L3_range = c(10, 35),
+  metrics = "shokirov"
 )
 }
 \arguments{
@@ -37,11 +38,15 @@ LiDAR_metrics(
 \item{vox_res}{Size of voxels when calculating vegetation volume}
 
 \item{L1_range}{Height boundaries when defining first height layer (same for L2/L3)}
+
+\item{metrics}{Metrics to calculate. Defaults to "shokirov", but could be any subset of c("maxH", "meanH", "stdH", "skewH", "kurH", "p_05", "p_10", "p_25", "p_50", "p_75", "p_90", "p_95", "p_99", "VCI_2", "VCI_5", "VCI_10", "VCI_15", "VCI_20", "Cov", "height_cv", "canopy_roughness", "canopy_shannon", "Tvolume", "vlayer_L1", "vlayer_L2", "vlayer_L3", "meanH_L1", "sdH_L1", "meanH_L2", "sdH_L2", "meanH_L3", "sdH_L3", "vci_L1", "vci_L2", "vci_L3")}
 }
 \value{
 A SpatRaster of metrics, each band being one metric, metric name in band name
 }
 \description{
 This function is used to calculate various LiDAR metrics used in ecology. The function takes LAS or LAScatalog objects created with the lidR package as inputs and returns a multi-layered terra SpatRaster, with each band corresponding to a metric. The choice of metrics, band names, and definitions are mostly based on Shokirov et al. (2023), with some minor changes being made for metrics that were not clearly defined in the paper. Notably, the roughness_L1, roughness_L2, roughness_L3 have not been included in the current edition.
+}
+\details{
 Shokirov, S. et al. (2023) ‘Habitat highs and lows: Using terrestrial and UAV LiDAR for modelling avian species richness and abundance in a restored woodland’, Remote Sensing of Environment. Elsevier, 285, p. 113326. doi: 10.1016/J.RSE.2022.113326.
 }
