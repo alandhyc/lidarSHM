@@ -1,26 +1,3 @@
-#' LiDAR Metrics Helper Function
-#'
-#' @return Lists to be used in pixel_metrics() and voxel_metrics()
-#' @export
-
-#Quantile 99th function
-
-q99_f<-function(z){
-  list(p_99 = quantile(z,probs = 0.99))
-}
-
-#' LiDAR Metrics Vegetation Cover Helper Function
-#'
-#' @return Lists to be used in pixel_metrics() and voxel_metrics()
-#' @export
-#'
-
-cov_f<-function(z,cov_grid){
-  maxZ<-max(z,na.rm = T)
-  area<-ifelse(maxZ>1.3,cov_grid^2,0)
-  list(Cov = area)
-}
-
 #' LiDAR Metrics Roughness Helper Function
 #'
 #' @return Lists to be used in pixel_metrics() and voxel_metrics()
@@ -48,15 +25,4 @@ roughness_metrics_f<-function(z,shannon_cut){
     canopy_roughness = roughness,
     canopy_shannon = shannon
   )
-}
-
-#' LiDAR Metrics Voxel Helper Function
-#'
-#' @return Lists to be used in pixel_metrics() and voxel_metrics()
-#' @export
-#'
-#Note voxel area function
-
-vox_f<-function(vox_res){
-  list(vol = vox_res^3)
 }
