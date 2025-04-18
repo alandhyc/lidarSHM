@@ -488,6 +488,9 @@ LiDAR_metrics<-function(las,
 
     return(all_metrics)
 
+    rm(las,las_filtered,empty_raster,las_filtered_vci,las_nonground,L1,L2,L3,L1_VCI,L2_VCI,L3_VCI)
+    gc()
+
   } # End of is(las,"LAS")
 
   if(is(las,"LAScatalog")){
