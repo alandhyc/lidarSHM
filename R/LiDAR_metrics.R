@@ -116,6 +116,7 @@ LiDAR_metrics<-function(las,
         #Select the relevant metrics
         wanted<-std_names[which(std_names %in% metric_names)]
         std_metrics<-std_metrics[[wanted]]
+        std_metrics<-terra::resample(std_metrics,empty_raster)
         r_list$std_metrics<-std_metrics
       }
 
@@ -124,6 +125,7 @@ LiDAR_metrics<-function(las,
         q99<-pixel_metrics(las_filtered,
                            res = res,
                            func = ~q99_f(z = Z))
+        q99<-terra::resample(q99,empty_raster)
         r_list$q99<-q99
       }
 
@@ -135,30 +137,35 @@ LiDAR_metrics<-function(las,
       if("VCI_2" %in% metric_names){
         vci2exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 2))
         vci2<-pixel_metrics(las_filtered_vci,eval(vci2exp),res = res)
+        vci2<-terra::resample(vci2,empty_raster)
         r_list$VCI_2<-vci2
       }
 
       if("VCI_5" %in% metric_names){
         vci5exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 5))
         vci5<-pixel_metrics(las_filtered_vci,eval(vci5exp),res = res)
+        vci5<-terra::resample(vci5,empty_raster)
         r_list$VCI_5<-vci5
       }
 
       if("VCI_10" %in% metric_names){
         vci10exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 10))
         vci10<-pixel_metrics(las_filtered_vci,eval(vci10exp),res = res)
+        vci10<-terra::resample(vci10,empty_raster)
         r_list$VCI_10<-vci10
       }
 
       if("VCI_15" %in% metric_names){
         vci15exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 15))
         vci15<-pixel_metrics(las_filtered_vci,eval(vci15exp),res = res)
+        vci15<-terra::resample(vci15,empty_raster)
         r_list$VCI_15<-vci15
       }
 
       if("VCI_20" %in% metric_names){
         vci20exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 20))
         vci20<-pixel_metrics(las_filtered_vci,eval(vci20exp),res = res)
+        vci20<-terra::resample(vci20,empty_raster)
         r_list$VCI_20<-vci20
       }
 
@@ -181,6 +188,8 @@ LiDAR_metrics<-function(las,
       cov<-terra::resample(cov,vci2,method = "sum")
       cov<-cov/(res^2)
       names(cov)<-"Cov"
+
+      cov<-terra::resample(cov,empty_raster)
 
       r_list$Cov<-cov
     }
