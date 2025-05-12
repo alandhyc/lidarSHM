@@ -38,7 +38,7 @@ LiDAR_metrics<-function(las,
   metric_names<-c("maxH","meanH","stdH","skewH","kurH","p_05","p_10","p_25","p_50","p_75","p_90","p_95","p_99",
                   paste0("VCI_",c(2,5,10,15,20)),
                   "Cov",
-                  "height_cv","canopy_roughness","canopy_shannon",
+                  "height_cv","canopy_shannon",
                   "Tvolume",
                   "vlayer_L1","vlayer_L2","vlayer_L3",
                   "meanH_L1","sdH_L1","meanH_L2","sdH_L2","meanH_L3","sdH_L3",
@@ -198,7 +198,7 @@ LiDAR_metrics<-function(las,
     #Roughness metrics
     #Takes the filtered point cloud (>1.3m) as input
 
-    rough_names<-c("height_cv","canopy_roughness","canopy_shannon")
+    rough_names<-c("height_cv","canopy_shannon")
 
     if(sum(rough_names %in% metric_names) >= 1){
 

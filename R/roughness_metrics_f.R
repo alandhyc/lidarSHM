@@ -10,9 +10,6 @@ roughness_metrics_f<-function(Z,shannon_cut){
   #Coefficient of variation
   CV <- sd(Z, na.rm = TRUE) / mean(Z, na.rm = TRUE)
 
-  #Roughness according to Herrero-Huerta et al. (2020)
-  roughness <- IQR(Z, na.rm = TRUE)^(median(Z, na.rm = TRUE))
-
   #Shannon according to Davison et al. (2023)
   z_cut <- cut(Z, shannon_cut)
   z_cut <- na.omit(z_cut)
@@ -22,7 +19,6 @@ roughness_metrics_f<-function(Z,shannon_cut){
 
   list(
     height_cv = CV,
-    canopy_roughness = roughness,
     canopy_shannon = shannon
   )
 }
