@@ -1,10 +1,13 @@
 #' LiDAR Metrics Function
 #'
-#' This function is used to calculate various LiDAR metrics used in ecology. The function takes LAS or LAScatalog objects created with the lidR package as inputs and returns a multi-layered terra SpatRaster, with each band corresponding to a metric. The choice of metrics, band names, and definitions are mostly based on Shokirov et al. (2023), with some minor changes being made for metrics that were not clearly defined in the paper. Notably, the roughness_L1, roughness_L2, roughness_L3 have not been included in the current edition.
+#' This function is used to calculate various LiDAR metrics used in ecology. The function takes LAS or LAScatalog objects created with the lidR package as inputs and returns a multi-layered terra SpatRaster, with each band corresponding to a metric. The choice of metrics, band names, and definitions are mostly based on Shokirov et al. (2023), with the exception of canopy_roughness, roughness_L1, roughness_L2, and roughness_L3, which are not included in the current edition.
 #'
 #' Shokirov, S. et al. (2023) ‘Habitat highs and lows: Using terrestrial and UAV LiDAR for modelling avian species richness and abundance in a restored woodland’, Remote Sensing of Environment. Elsevier, 285, p. 113326. doi: 10.1016/J.RSE.2022.113326.
 #'
 #' @param las A LAS or LAScatalog object
+#' @param ground_classified True if the LAS object supplied is already ground classified
+#' @param h_cutoff Ground and shrub points are removed when calculating metrics such as SD, skew and kurtosis. This represents the cutoff height, 1.3m by default (see Shokirov et al. (2023)).
+#' @param gap_thres Threshold for calculating gap fraction. Default at 2m.
 #' @param res Resolution in meters
 #' @param mcc_s For MCC ground classification, see support document for details
 #' @param mcc_t For MCC ground classification, see support document for details
@@ -13,40 +16,59 @@
 #' @param shannon_cut Bins when calculating shannon diversity index for height distribution
 #' @param vox_res Size of voxels when calculating vegetation volume
 #' @param L1_range Height boundaries when defining first height layer (same for L2/L3)
-#' @param metrics Metrics to calculate. Defaults to "shokirov", but could be any subset of c("maxH", "meanH", "stdH", "skewH", "kurH", "p_05", "p_10", "p_25", "p_50", "p_75", "p_90", "p_95", "p_99", "VCI_2", "VCI_5", "VCI_10", "VCI_15", "VCI_20", "Cov", "height_cv", "canopy_roughness", "canopy_shannon", "Tvolume", "vlayer_L1", "vlayer_L2", "vlayer_L3", "meanH_L1", "sdH_L1", "meanH_L2", "sdH_L2", "meanH_L3", "sdH_L3", "vci_L1", "vci_L2", "vci_L3")
+#' @param metrics Metrics to calculate. Defaults to "all", but could be any subset of c("lidar_maxH", "lidar_meanH", "lidar_stdH", "lidar_skewH", "lidar_kurH", "lidar_p_05", "lidar_p_10", "lidar_p_25", "lidar_p_50", "lidar_p_75", "lidar_p_90", "lidar_p_95", "lidar_p_999", "lidar_vci_2m", "lidar_vci_5m", "lidar_vci_10m", "lidar_vci_15m", "lidar_vci_20m", "lidar_Cov","lidar_gapFrac", "lidar_grndFrac", "lidar_height_cv","lidar_rcv","lidar_rms", "lidar_canopy_shannon", "lidar_Tvolume", "lidar_vlayer_L1", "lidar_vlayer_L2", "lidar_vlayer_L3", "lidar_meanH_L1", "lidar_sdH_L1", "lidar_meanH_L2", "lidar_sdH_L2", "lidar_meanH_L3", "lidar_sdH_L3", "lidar_vci_L1", "lidar_vci_L2", "lidar_vci_L3")
 #' @return A SpatRaster of metrics, each band being one metric, metric name in band name
 #' @import lidR
+#' @import RMCC
 #' @export
 
+las<-lidR::readLAS("F:/Cairngorms_project/LiDAR/Temp/280000_805000.laz")
+
+ground_classified = F
+res=5
+h_cutoff=1.3
+gap_thres = 2
+mcc_s=1.5
+mcc_t=0.3
+zmax = 35
+shannon_cut=c(-1,2,5,10,15,35)
+vox_res=0.5
+L1_range=c(0,1)
+L2_range=c(1,10)
+L3_range=c(10,35)
+metrics = "all"
+
 LiDAR_metrics<-function(las,
+                        ground_classified = F,
                         res=5,
                         h_cutoff=1.3,
+                        gap_thres = 2,
                         mcc_s=1.5,
                         mcc_t=0.3,
-                        cov_grid=0.25,
                         zmax = 35,
                         shannon_cut=c(-1,2,5,10,15,35),
                         vox_res=0.5,
                         L1_range=c(0,1),
                         L2_range=c(1,10),
                         L3_range=c(10,35),
-                        metrics = "shokirov"
+                        metrics = "all"
                         ){
 
+  # 1. Metric names ####
   #Define the subset of metrics we want
 
-  metric_names<-c("maxH","meanH","stdH","skewH","kurH","p_05","p_10","p_25","p_50","p_75","p_90","p_95","p_99",
-                  paste0("VCI_",c(2,5,10,15,20)),
-                  "Cov",
-                  "height_cv","canopy_shannon",
-                  "Tvolume",
-                  "vlayer_L1","vlayer_L2","vlayer_L3",
-                  "meanH_L1","sdH_L1","meanH_L2","sdH_L2","meanH_L3","sdH_L3",
-                  paste0("vci_L",c(1,2,3)))
+  metric_names<-c("lidar_maxH","lidar_meanH","lidar_stdH","lidar_skewH","lidar_kurH","lidar_p_05","lidar_p_10","lidar_p_25","lidar_p_50","lidar_p_75","lidar_p_90","lidar_p_95","lidar_p_999",
+                  paste0("lidar_vci_",c(2,5,10,15,20),"m"),
+                  "lidar_Cov","lidar_gapFrac","lidar_grndFrac",
+                  "lidar_height_cv","lidar_rcv","lidar_rms","lidar_canopy_shannon",
+                  "lidar_Tvolume","lidar_ePAI",
+                  "lidar_vlayer_L1","lidar_vlayer_L2","lidar_vlayer_L3",
+                  "lidar_meanH_L1","lidar_sdH_L1","lidar_meanH_L2","lidar_sdH_L2","lidar_meanH_L3","lidar_sdH_L3",
+                  paste0("lidar_vci_L",c(1,2,3)))
 
   additional_metrics<-c()
 
-  if(metrics == "shokirov"){
+  if(metrics == "all"){
     metric_names<-metric_names
   } else {
     metric_names<-metrics
@@ -56,26 +78,31 @@ LiDAR_metrics<-function(las,
 
   if(is(las,"LAS")){
 
+    # 2. Ground classification and normalisation ####
+
     r_list<-list() #Create a list to store results
 
-    las<-classify_ground(las,mcc(s=mcc_s,t=mcc_t))
-    las<-normalize_height(las,knnidw())
+    if(ground_classified==F){
+      las<-lidR::classify_ground(las,lidR::mcc(s=mcc_s,t=mcc_t))
+    }
+    las<-lidR::normalize_height(las,lidR::knnidw())
 
     #Most metrics carries a filter of Z>1.3
 
-    las_filtered<-filter_poi(las,Z>h_cutoff)
+    las_filtered<-lidR::filter_poi(las,Z>h_cutoff)
 
+    # 3. Empty las handling for std.metrics ####
 
     #If las_filtered is empty, create a stack of empty rasters
 
-    empty_raster<-pixel_metrics(las,~list(zmax = mean(Z,na.rm = T)),res = res)
+    empty_raster<-lidR::pixel_metrics(las,~list(zmax = mean(Z,na.rm = T)),res = res)
     terra::values(empty_raster)<-0
 
     #Empty point cloud, create a stack from las
 
     if(nrow(las_filtered@data)==0){
 
-      std_names<-c("maxH","meanH","stdH","skewH","kurH","p_05","p_10","p_25","p_50","p_75","p_90","p_95")
+      std_names<-c("lidar_maxH","lidar_meanH","lidar_stdH","lidar_skewH","lidar_kurH","lidar_p_05","lidar_p_10","lidar_p_25","lidar_p_50","lidar_p_75","lidar_p_90","lidar_p_95")
 
       if(sum(std_names %in% metric_names)>=1){
         std_metrics<-terra::rast(replicate(12,empty_raster))
@@ -85,30 +112,32 @@ LiDAR_metrics<-function(las,
         r_list$std_metrics<-std_metrics
       }
 
-      if("p_99" %in% metrics){
-        q99<-empty_raster
-        names(q99)<-"p_99"
-        r_list$q99<-q99
+      if("lidar_p_999" %in% metrics){
+        q999<-empty_raster
+        names(q999)<-"lidar_p_999"
+        r_list$q999<-q999
       }
 
-      if(sum(paste0("VCI_",c(2,5,10,15,20)) %in% metric_names) >=1){
-        VCI_combined<-terra::rast(replicate(5,empty_raster))
-        names(VCI_combined)<-paste0("VCI_",c(2,5,10,15,20))
-        wanted<-paste0("VCI_",c(2,5,10,15,20))[which(paste0("VCI_",c(2,5,10,15,20)) %in% metric_names)]
-        VCI_combined<-VCI_combined[[wanted]]
-        r_list$VCI_combined<-VCI_combined
+      if(sum(paste0("lidar_vci_",c(2,5,10,15,20),"m") %in% metric_names) >=1){
+        lidar_VCI_combined<-terra::rast(replicate(5,empty_raster))
+        names(lidar_VCI_combined)<-paste0("lidar_vci_",c(2,5,10,15,20),"m")
+        wanted<-paste0("lidar_vci_",c(2,5,10,15,20),"m")[which(paste0("lidar_vci_",c(2,5,10,15,20),"m") %in% metric_names)]
+        lidar_VCI_combined<-lidar_VCI_combined[[wanted]]
+        r_list$lidar_VCI_combined<-lidar_VCI_combined
       }
 
 
 
     } else {
 
+      # 4. Standard metrics ####
+
       #Point cloud not empty, calculation needed
-      std_names<-c("maxH","meanH","stdH","skewH","kurH","p_05","p_10","p_25","p_50","p_75","p_90","p_95")
+      std_names<-c("lidar_maxH","lidar_meanH","lidar_stdH","lidar_skewH","lidar_kurH","lidar_p_05","lidar_p_10","lidar_p_25","lidar_p_50","lidar_p_75","lidar_p_90","lidar_p_95")
 
       if(sum(std_names %in% metric_names)>=1){
         #Calculate metrics
-        std_metrics<-pixel_metrics(las_filtered,.stdmetrics_z,res = res)
+        std_metrics<-lidR::pixel_metrics(las_filtered,lidR::.stdmetrics_z,res = res)
         std_metrics<-std_metrics[[c("zmax","zmean","zsd","zskew","zkurt","zq5","zq10","zq25","zq50","zq75","zq90","zq95")]]
 
         names(std_metrics)<-std_names
@@ -120,85 +149,130 @@ LiDAR_metrics<-function(las,
         r_list$std_metrics<-std_metrics
       }
 
-      #Also add the 99th quantile
-      if("p_99" %in% metric_names){
-        q99<-pixel_metrics(las_filtered,
-                           res = res,
-                           func = ~q99_f(z = Z))
-        q99<-terra::resample(q99,empty_raster)
-        r_list$q99<-q99
+      #5. 99.9th quantile ####
+
+      #Also add the 999th quantile
+      if("lidar_p_999" %in% metric_names){
+        q999<-lidR::pixel_metrics(las_filtered,
+                                  res = res,
+                                  func = ~q99_f(z = Z))
+        q999<-terra::resample(q999,empty_raster)
+        names(q999)<-"lidar_p_999"
+        r_list$q999<-q999
       }
 
-      #VCI
+      #6. VCI ####
 
       las_filtered_vci<-las_filtered
       colnames(las_filtered_vci@data)[colnames(las@data)=="Z"]<-"z" #VCI() takes z not Z
 
-      if("VCI_2" %in% metric_names){
+      if("lidar_vci_2m" %in% metric_names){
         vci2exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 2))
-        vci2<-pixel_metrics(las_filtered_vci,eval(vci2exp),res = res)
+        vci2<-lidR::pixel_metrics(las_filtered_vci,eval(vci2exp),res = res)
         vci2<-terra::resample(vci2,empty_raster)
-        r_list$VCI_2<-vci2
+        names(vci2)<-"lidar_vci_2m"
+        r_list$lidar_VCI_2<-vci2
       }
 
-      if("VCI_5" %in% metric_names){
+      if("lidar_vci_5m" %in% metric_names){
         vci5exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 5))
-        vci5<-pixel_metrics(las_filtered_vci,eval(vci5exp),res = res)
+        vci5<-lidR::pixel_metrics(las_filtered_vci,eval(vci5exp),res = res)
         vci5<-terra::resample(vci5,empty_raster)
-        r_list$VCI_5<-vci5
+        names(vci5)<-"lidar_vci_5m"
+        r_list$lidar_VCI_5<-vci5
       }
 
-      if("VCI_10" %in% metric_names){
+      if("lidar_vci_10m" %in% metric_names){
         vci10exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 10))
-        vci10<-pixel_metrics(las_filtered_vci,eval(vci10exp),res = res)
+        vci10<-lidR::pixel_metrics(las_filtered_vci,eval(vci10exp),res = res)
         vci10<-terra::resample(vci10,empty_raster)
-        r_list$VCI_10<-vci10
+        names(vci10)<-"lidar_vci_10m"
+        r_list$lidar_VCI_10<-vci10
       }
 
-      if("VCI_15" %in% metric_names){
+      if("lidar_vci_15m" %in% metric_names){
         vci15exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 15))
-        vci15<-pixel_metrics(las_filtered_vci,eval(vci15exp),res = res)
+        vci15<-lidR::pixel_metrics(las_filtered_vci,eval(vci15exp),res = res)
         vci15<-terra::resample(vci15,empty_raster)
-        r_list$VCI_15<-vci15
+        names(vci15)<-"lidar_vci_15m"
+        r_list$lidar_VCI_15<-vci15
       }
 
-      if("VCI_20" %in% metric_names){
+      if("lidar_vci_20m" %in% metric_names){
         vci20exp<-substitute(~lidR::VCI(z,zmax,by),list(zmax = zmax, by = 20))
-        vci20<-pixel_metrics(las_filtered_vci,eval(vci20exp),res = res)
+        vci20<-lidR::pixel_metrics(las_filtered_vci,eval(vci20exp),res = res)
         vci20<-terra::resample(vci20,empty_raster)
-        r_list$VCI_20<-vci20
+        names(vci20)<-"lidar_vci_20m"
+        r_list$lidar_VCI_20<-vci20
       }
 
     } # End of check empty else{}
 
 
-    #Canopy cover (cov)
+    #7. Canopy cover (cov) ####
     #For each pixel, the area of 0.25m (or cov_grid) pixels being canopy (max_z>1.3) is divided by the total area of the pixel
 
-    if("Cov" %in% metric_names){
+    las_first<-lidR::filter_first(las)
 
-      cov_exp<-substitute(~cov_f(Z,cov_grid),list(cov_grid = cov_grid))
+    if("lidar_Cov" %in% metric_names){
 
-      cov<-pixel_metrics(
-        las,
-        res = cov_grid,
+      cov_exp<-substitute(~cov_f(Z,h_cutoff),list(h_cutoff = h_cutoff))
+
+      cov<-lidR::pixel_metrics(
+        las_first,
+        res = res,
         func = eval(cov_exp)
       )
 
-      cov<-terra::resample(cov,vci2,method = "sum")
-      cov<-cov/(res^2)
-      names(cov)<-"Cov"
+      names(cov)<-"lidar_Cov"
 
       cov<-terra::resample(cov,empty_raster)
 
-      r_list$Cov<-cov
+      r_list$lidar_Cov<-cov
     }
 
 
-    #Roughness metrics
+    # 8. Gap fraction ####
+
+    if("lidar_gapFrac" %in% metric_names){
+
+      gapFrac_exp<-substitute(~gapFrac_f(Z,gap_thres),list(gap_thres = gap_thres))
+
+      gapFrac<-lidR::pixel_metrics(
+        las_first,
+        res = res,
+        func = eval(gapFrac_exp)
+      )
+
+      gapFrac<-terra::resample(gapFrac,empty_raster)
+
+      names(gapFrac)<-"lidar_gapFrac"
+
+      r_list$lidar_gapFrac<-gapFrac
+    }
+
+
+    # 9. Ground fraction ####
+
+    if("lidar_grndFrac" %in% metric_names){
+
+      grndFrac<-lidR::pixel_metrics(
+        las_first,
+        ~list(grndFrac=length(which(Z<0.5))/length(is.na(Z)==F)),
+        res = res
+        )
+
+      grndFrac<-terra::resample(grndFrac,empty_raster)
+      names(grndFrac)<-"lidar_grndFrac"
+
+      r_list$lidar_grndFrac<-grndFrac
+    }
+
+
+    # 10. Roughness metrics ####
     #Takes the filtered point cloud (>1.3m) as input
 
-    rough_names<-c("height_cv","canopy_shannon")
+    rough_names<-c("lidar_height_cv","lidar_rcv","lidar_rms","lidar_canopy_shannon")
 
     if(sum(rough_names %in% metric_names) >= 1){
 
@@ -206,7 +280,7 @@ LiDAR_metrics<-function(las,
 
         #Empty point cloud
 
-        rough<-terra::rast(replicate(3,empty_raster))
+        rough<-terra::rast(replicate(4,empty_raster))
         names(rough)<-rough_names
 
         rough<-rough[[rough_names[which(rough_names %in% metric_names)]]]
@@ -219,12 +293,13 @@ LiDAR_metrics<-function(las,
 
         rough_exp<-substitute(~roughness_metrics_f(Z,shannon_cut),list(shannon_cut = shannon_cut))
 
-        rough<-pixel_metrics(
+        rough<-lidR::pixel_metrics(
           las,
           func = eval(rough_exp),
           res = res)
 
         rough<-terra::resample(rough,empty_raster)
+        names(rough)<-rough_names
 
         rough<-rough[[rough_names[which(rough_names %in% metric_names)]]]
 
@@ -232,18 +307,19 @@ LiDAR_metrics<-function(las,
       }
     }
 
-    #Vegetation volume
+    # 11. Vegetation volume ####
+
     #Number of 0.5 m3 voxels divided by 8
 
-    las_nonground<-filter_poi(las_filtered,Classification==1)
+    las_nonground<-lidR::filter_poi(las,Classification==1)
 
-    if("Tvolume" %in% metric_names){
+    if("lidar_Tvolume" %in% metric_names){
       if(nrow(las_nonground@data)==0){
 
         #Empty point cloud
 
         Tvolume<-empty_raster
-        names(Tvolume)<-"Tvolume"
+        names(Tvolume)<-"lidar_Tvolume"
 
         r_list$Tvolume<-Tvolume
 
@@ -251,15 +327,18 @@ LiDAR_metrics<-function(las,
 
         vox_expr<-substitute(~vox_f(vox_res),list(vox_res = vox_res))
 
-        las_vox<-voxel_metrics(las_nonground,
-                               func = eval(vox_expr),
-                               res = vox_res)
+        las_vox<-lidR::voxel_metrics(las_nonground,
+                                     func = eval(vox_expr),
+                                     res = vox_res)
 
-        las_vox<-LAS(las_vox)
+        las_vox<-lidR::LAS(las_vox)
 
-        Tvolume<-pixel_metrics(las_vox,~list(Tvolume = sum(vol)),res = res)
+        Tvolume<-lidR::pixel_metrics(las_vox,
+                                     ~list(Tvolume = sum(vol)),
+                                     res = res)
 
         Tvolume<-terra::resample(Tvolume,empty_raster)
+        names(Tvolume)<-"lidar_Tvolume"
 
         r_list$Tvolume<-Tvolume
 
@@ -267,35 +346,66 @@ LiDAR_metrics<-function(las,
 
     } #End of metrics name check
 
+    # 12. ePAI ####
 
-    #Layer metrics
+    if("lidar_ePAI" %in% metric_names){
+      if(nrow(las@data)==0){
+
+        #Empty point cloud
+
+        ePAI<-empty_raster
+        names(ePAI)<-"lidar_ePAI"
+
+        r_list$lidar_ePAI<-ePAI
+
+      } else{
+
+        ePAI_expr<-substitute(~ePAI_f(Z,ReturnNumber,NumberOfReturns,ScanAngleRank,h_cutoff),list(h_cutoff = h_cutoff))
+
+        ePAI<-lidR::pixel_metrics(las,
+                                  func = eval(ePAI_expr),
+                                  res = res)
+
+
+        ePAI<-terra::resample(ePAI,empty_raster)
+        names(ePAI)<-"lidar_ePAI"
+
+        r_list$lidar_ePAI<-ePAI
+
+      } #End of empty check
+    } #End of name check
+
+    # 13. Layer metrics ####
     #Let's first create subsets of the point clouds
 
-    L1<-filter_poi(las_nonground,Z<=L1_range[2] & Z>=L1_range[1])
-    L2<-filter_poi(las_nonground,Z<=L2_range[2] & Z>L2_range[1])
-    L3<-filter_poi(las_nonground,Z<=L3_range[2] & Z>L3_range[1])
+    L1<-lidR::filter_poi(las_nonground,Z<=L1_range[2] & Z>=L1_range[1])
+    L2<-lidR::filter_poi(las_nonground,Z<=L2_range[2] & Z>L2_range[1])
+    L3<-lidR::filter_poi(las_nonground,Z<=L3_range[2] & Z>L3_range[1])
 
-    #vlayer
+    ## 13.1 Volume by layer (vlayer) ####
     #volume in each layer
 
     #L1
 
-    if("vlayer_L1" %in% metric_names){
+    if("lidar_vlayer_L1" %in% metric_names){
 
       if(nrow(L1@data)!=0){
 
-        vlayer_L1<-voxel_metrics(L1,
-                                 eval(vox_expr),
-                                 res = vox_res)
-        vlayer_L1<-LAS(vlayer_L1)
-        vlayer_L1<-pixel_metrics(vlayer_L1,~list(vlayer_L1=sum(vol)),res = res)
+        vlayer_L1<-lidR::voxel_metrics(L1,
+                                       eval(vox_expr),
+                                       res = vox_res)
+        vlayer_L1<-lidR::LAS(vlayer_L1)
+        vlayer_L1<-lidR::pixel_metrics(vlayer_L1,
+                                       ~list(vlayer_L1=sum(vol)),
+                                       res = res)
         vlayer_L1<-terra::resample(vlayer_L1,empty_raster)
+        names(vlayer_L1)<-"lidar_vlayer_L1"
         r_list$vlayer_L1<-vlayer_L1
 
       } else {
 
         vlayer_L1<-empty_raster
-        names(vlayer_L1)<-"vlayer_L1"
+        names(vlayer_L1)<-"lidar_vlayer_L1"
         r_list$vlayer_L1<-vlayer_L1
 
       } #End of empty check
@@ -305,20 +415,23 @@ LiDAR_metrics<-function(las,
 
     #L2
 
-    if("vlayer_L2" %in% metric_names){
+    if("lidar_vlayer_L2" %in% metric_names){
 
       if(nrow(L2@data)!=0){
-        vlayer_L2<-voxel_metrics(L2,
-                                 eval(vox_expr),
-                                 res = vox_res)
-        vlayer_L2<-LAS(vlayer_L2)
-        vlayer_L2<-pixel_metrics(vlayer_L2,~list(vlayer_L2=sum(vol)),res = res)
+        vlayer_L2<-lidR::voxel_metrics(L2,
+                                       eval(vox_expr),
+                                       res = vox_res)
+        vlayer_L2<-lidR::LAS(vlayer_L2)
+        vlayer_L2<-lidR::pixel_metrics(vlayer_L2,
+                                       ~list(vlayer_L2=sum(vol)),
+                                       res = res)
         vlayer_L2<-terra::resample(vlayer_L2,empty_raster)
+        names(vlayer_L2)<-"lidar_vlayer_L2"
         r_list$vlayer_L2<-vlayer_L2
 
       } else {
         vlayer_L2<-empty_raster
-        names(vlayer_L2)<-"vlayer_L2"
+        names(vlayer_L2)<-"lidar_vlayer_L2"
         r_list$vlayer_L2<-vlayer_L2
       } #End of empty check
     } #End of metric name check
@@ -326,21 +439,24 @@ LiDAR_metrics<-function(las,
 
     #L3
 
-    if("vlayer_L3" %in% metric_names){
+    if("lidar_vlayer_L3" %in% metric_names){
 
       if(nrow(L3@data)!=0){
-        vlayer_L3<-voxel_metrics(L3,
-                                 eval(vox_expr),
-                                 res = vox_res)
-        vlayer_L3<-LAS(vlayer_L3)
-        vlayer_L3<-pixel_metrics(vlayer_L3,~list(vlayer_L3=sum(vol)),res = res)
+        vlayer_L3<-lidR::voxel_metrics(L3,
+                                       eval(vox_expr),
+                                       res = vox_res)
+        vlayer_L3<-lidR::LAS(vlayer_L3)
+        vlayer_L3<-lidR::pixel_metrics(vlayer_L3,
+                                       ~list(vlayer_L3=sum(vol)),
+                                       res = res)
         vlayer_L3<-terra::resample(vlayer_L3,empty_raster)
+        names(vlayer_L3)<-"lidar_vlayer_L3"
         r_list$vlayer_L3<-vlayer_L3
 
       } else {
 
         vlayer_L3<-empty_raster
-        names(vlayer_L3)<-"vlayer_L3"
+        names(vlayer_L3)<-"lidar_vlayer_L3"
         r_list$vlayer_L3<-vlayer_L3
 
       } #End of empty check
@@ -349,59 +465,69 @@ LiDAR_metrics<-function(las,
 
 
 
-    #mean, sd, roughness, and vci
+    ## 13.2 mean, sd, roughness, and vci####
 
-    meansd_names<-c("meanH_L1","sdH_L1","meanH_L2","sdH_L2","meanH_L3","sdH_L3")
+    meansd_names<-c("lidar_meanH_L1","lidar_sdH_L1","lidar_meanH_L2","lidar_sdH_L2","lidar_meanH_L3","lidar_sdH_L3")
 
     if(sum(meansd_names %in% metric_names) >= 1){
 
       #Define empty raster
 
       empty_raster2<-c(empty_raster,empty_raster)
-      names(empty_raster2)<-c("meanH","sdH")
 
       #Function
 
       #L1
 
       if(nrow(L1@data)!=0){
-        mean_sd_L1<-pixel_metrics(L1,
-                                  res = res,
-                                  func = ~list(meanH = mean(Z,na.rm = T),
-                                               sdH = sd(Z,na.rm = T)))
+
+        mean_sd_L1<-lidR::pixel_metrics(L1,
+                                        res = res,
+                                        func = ~list(lidar_meanH = mean(Z,na.rm = T),
+                                                     lidar_sdH = sd(Z,na.rm = T)))
+
       } else {
+
         mean_sd_L1<-empty_raster2
+
       }
 
       #L2
 
       if(nrow(L2@data)!=0){
-        mean_sd_L2<-pixel_metrics(L2,
-                                  res = res,
-                                  func = ~list(meanH = mean(Z,na.rm = T),
-                                               sdH = sd(Z,na.rm = T)))
+
+        mean_sd_L2<-lidR::pixel_metrics(L2,
+                                        res = res,
+                                        func = ~list(lidar_meanH = mean(Z,na.rm = T),
+                                                     lidar_sdH = sd(Z,na.rm = T)))
+
       } else {
+
         mean_sd_L2<-empty_raster2
+
       }
 
       #L3
 
       if(nrow(L3@data)!=0){
-        mean_sd_L3<-pixel_metrics(L3,
-                                  res = res,
-                                  func = ~list(meanH = mean(Z,na.rm = T),
-                                               sdH = sd(Z,na.rm = T)))
+        mean_sd_L3<-lidR::pixel_metrics(L3,
+                                        res = res,
+                                        func = ~list(lidar_meanH = mean(Z,na.rm = T),
+                                               lidar_sdH = sd(Z,na.rm = T)))
+
       } else {
+
         mean_sd_L3<-empty_raster2
+
       }
 
       mean_sd_L1<-terra::resample(mean_sd_L1,empty_raster)
       mean_sd_L2<-terra::resample(mean_sd_L2,empty_raster)
       mean_sd_L3<-terra::resample(mean_sd_L3,empty_raster)
 
-      names(mean_sd_L1)<-paste0(names(mean_sd_L1),"_L1")
-      names(mean_sd_L2)<-paste0(names(mean_sd_L2),"_L2")
-      names(mean_sd_L3)<-paste0(names(mean_sd_L3),"_L3")
+      names(mean_sd_L1)<-c("lidar_meanH_L1","lidar_sdH_L1")
+      names(mean_sd_L2)<-c("lidar_meanH_L2","lidar_sdH_L2")
+      names(mean_sd_L3)<-c("lidar_meanH_L3","lidar_sdH_L3")
 
       mean_sd_L123<-c(mean_sd_L1,mean_sd_L2,mean_sd_L3)
       mean_sd_L123<-mean_sd_L123[[meansd_names[which(meansd_names %in% metric_names)]]]
@@ -413,7 +539,7 @@ LiDAR_metrics<-function(las,
 
 
 
-    #VCI by layer
+    ## 13.3 VCI ####
     #The paper did not specify bin size
     #Here we do 5 bins for L1 and L2, then use the bin size of L2 for L3 (because L3 theoretically has no upper bound)
 
@@ -440,53 +566,53 @@ LiDAR_metrics<-function(las,
     colnames(L3_VCI@data)[colnames(L3_VCI@data)=="Z"]<-"z"
 
     #L1
-    if("vci_L1" %in% metric_names){
+    if("lidar_vci_L1" %in% metric_names){
 
       if(nrow(L1@data)!=0){
-        vci_L1<-pixel_metrics(L1_VCI,func = eval(vci_L1_exp),res = res)
+        vci_L1<-lidR::pixel_metrics(L1_VCI,func = eval(vci_L1_exp),res = res)
         vci_L1<-terra::resample(vci_L1,empty_raster)
       } else {
         vci_L1<-empty_raster
       }
 
-      names(vci_L1)<-"vci_L1"
-      r_list$vci_L1<-vci_L1
+      names(vci_L1)<-"lidar_vci_L1"
+      r_list$lidar_vci_L1<-vci_L1
 
     }
 
     #L2
-    if("vci_L2" %in% metric_names){
+    if("lidar_vci_L2" %in% metric_names){
 
       if(nrow(L2@data)!=0){
-        vci_L2<-pixel_metrics(L2_VCI,func = eval(vci_L2_exp),res = res)
+        vci_L2<-lidR::pixel_metrics(L2_VCI,func = eval(vci_L2_exp),res = res)
         vci_L2<-terra::resample(vci_L2,empty_raster)
       } else {
         vci_L2<-empty_raster
       }
 
-      names(vci_L2)<-"vci_L2"
-      r_list$vci_L2<-vci_L2
+      names(vci_L2)<-"lidar_vci_L2"
+      r_list$lidar_vci_L2<-vci_L2
 
     }
 
 
     #L3
-    if("vci_L3" %in% metric_names){
+    if("lidar_vci_L3" %in% metric_names){
 
       if(nrow(L3@data)!=0){
-        vci_L3<-pixel_metrics(L3_VCI,func = eval(vci_L3_exp),res = res)
+        vci_L3<-lidR::pixel_metrics(L3_VCI,func = eval(vci_L3_exp),res = res)
         vci_L3<-terra::resample(vci_L3,empty_raster)
       } else {
         vci_L3<-empty_raster
       }
 
-      names(vci_L3)<-"vci_L3"
-      r_list$vci_L3<-vci_L3
+      names(vci_L3)<-"lidar_vci_L3"
+      r_list$lidar_vci_L3<-vci_L3
 
     }
 
 
-    #Put everything back together
+    # 14. Final raster####
 
     final_names<-lapply(r_list,function(r){
       return(terra::names(terra::rast(r)))
@@ -497,7 +623,7 @@ LiDAR_metrics<-function(las,
 
     return(all_metrics)
 
-    rm(las,las_filtered,empty_raster,las_filtered_vci,las_nonground,L1,L2,L3,L1_VCI,L2_VCI,L3_VCI)
+    rm(las,las_filtered,empty_raster,las_first,las_filtered_vci,las_nonground,L1,L2,L3,L1_VCI,L2_VCI,L3_VCI)
     gc()
 
   } # End of is(las,"LAS")
@@ -512,6 +638,7 @@ LiDAR_metrics<-function(las,
                              LiDAR_metrics,
                              res = res,
                              h_cutoff = h_cutoff,
+                             gap_thres = gap_thres,
                              mcc_s = mcc_s,
                              mcc_t = mcc_t,
                              cov_grid = cov_grid,

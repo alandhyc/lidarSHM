@@ -6,5 +6,5 @@
 #Quantile 99th function
 
 q99_f<-function(z){
-  list(p_99 = quantile(z,probs = 0.99))
+  list(p_99 = quantile(z,probs = 0.999))
 }
