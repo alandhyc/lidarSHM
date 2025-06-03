@@ -11,21 +11,13 @@
 #' @param metrics Metrics to calculate, defaults to "all" to calculate all metrics. Alternatively metrics could be specified by names: c("chm_maxH","chm_sdH","chm_height_cv","chm_rcv","chm_rms","chm_skewH","chm_kurH","chm_gapFrac","chm_grndFrac","chm_rumple_norm")
 #' @param rumple_fast Logical. Whether to use a fast approximation of CHM surface area or triangulating point clouds.
 #' @return A SpatRaster of metrics, each band being one metric, metric name in band name
-#' @import terra
-#' @import moments
-#' @import raster
-#' @import spex
-#' @import sf
-#' @import fasterize
-#' @import tools
-#' @import geometry
 #' @export
 
-chm<-terra::rast("F:/Global_wind_project/Wind_vs_aridity/GCA_chms_all_4326/20090708_chm_lspikefree_842.tif")
-
-agg<-50
-gap_thres = 2
-metrics = "all"
+# chm<-terra::rast("F:/Global_wind_project/Wind_vs_aridity/GCA_chms_all_4326/20090708_chm_lspikefree_842.tif")
+#
+# agg<-50
+# gap_thres = 2
+# metrics = "all"
 
 CHM_metrics<-function(chm,agg,gap_thres = 2,metrics = "all",rumple_fast = T){
 

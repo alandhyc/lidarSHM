@@ -4,7 +4,7 @@
 \alias{cov_f}
 \title{LiDAR Metrics Vegetation Cover Helper Function}
 \usage{
-cov_f(Z, cov_grid)
+cov_f(Z, h_cutoff)
 }
 \value{
 Lists to be used in pixel_metrics() and voxel_metrics()

@@ -18,25 +18,30 @@
 #' @param L1_range Height boundaries when defining first height layer (same for L2/L3)
 #' @param metrics Metrics to calculate. Defaults to "all", but could be any subset of c("lidar_maxH", "lidar_meanH", "lidar_stdH", "lidar_skewH", "lidar_kurH", "lidar_p_05", "lidar_p_10", "lidar_p_25", "lidar_p_50", "lidar_p_75", "lidar_p_90", "lidar_p_95", "lidar_p_999", "lidar_vci_2m", "lidar_vci_5m", "lidar_vci_10m", "lidar_vci_15m", "lidar_vci_20m", "lidar_Cov","lidar_gapFrac", "lidar_grndFrac", "lidar_height_cv","lidar_rcv","lidar_rms", "lidar_canopy_shannon", "lidar_Tvolume", "lidar_vlayer_L1", "lidar_vlayer_L2", "lidar_vlayer_L3", "lidar_meanH_L1", "lidar_sdH_L1", "lidar_meanH_L2", "lidar_sdH_L2", "lidar_meanH_L3", "lidar_sdH_L3", "lidar_vci_L1", "lidar_vci_L2", "lidar_vci_L3")
 #' @return A SpatRaster of metrics, each band being one metric, metric name in band name
+#' @import terra
+#' @import moments
+#' @import sf
+#' @import tools
+#' @import geometry
 #' @import lidR
 #' @import RMCC
 #' @export
 
-las<-lidR::readLAS("F:/Cairngorms_project/LiDAR/Temp/280000_805000.laz")
-
-ground_classified = F
-res=5
-h_cutoff=1.3
-gap_thres = 2
-mcc_s=1.5
-mcc_t=0.3
-zmax = 35
-shannon_cut=c(-1,2,5,10,15,35)
-vox_res=0.5
-L1_range=c(0,1)
-L2_range=c(1,10)
-L3_range=c(10,35)
-metrics = "all"
+# las<-lidR::readLAS("F:/Cairngorms_project/LiDAR/Temp/280000_805000.laz")
+#
+# ground_classified = F
+# res=5
+# h_cutoff=1.3
+# gap_thres = 2
+# mcc_s=1.5
+# mcc_t=0.3
+# zmax = 35
+# shannon_cut=c(-1,2,5,10,15,35)
+# vox_res=0.5
+# L1_range=c(0,1)
+# L2_range=c(1,10)
+# L3_range=c(10,35)
+# metrics = "all"
 
 LiDAR_metrics<-function(las,
                         ground_classified = F,
@@ -636,12 +641,12 @@ LiDAR_metrics<-function(las,
 
     mtrc_result<-catalog_map(las,
                              LiDAR_metrics,
+                             ground_classified = ground_classified,
                              res = res,
                              h_cutoff = h_cutoff,
                              gap_thres = gap_thres,
                              mcc_s = mcc_s,
                              mcc_t = mcc_t,
-                             cov_grid = cov_grid,
                              zmax = zmax,
                              shannon_cut = shannon_cut,
                              vox_res = vox_res,

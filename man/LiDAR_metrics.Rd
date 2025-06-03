@@ -6,30 +6,35 @@
 \usage{
 LiDAR_metrics(
   las,
+  ground_classified = F,
   res = 5,
   h_cutoff = 1.3,
+  gap_thres = 2,
   mcc_s = 1.5,
   mcc_t = 0.3,
-  cov_grid = 0.25,
   zmax = 35,
   shannon_cut = c(-1, 2, 5, 10, 15, 35),
   vox_res = 0.5,
   L1_range = c(0, 1),
   L2_range = c(1, 10),
   L3_range = c(10, 35),
-  metrics = "shokirov"
+  metrics = "all"
 )
 }
 \arguments{
 \item{las}{A LAS or LAScatalog object}
 
+\item{ground_classified}{True if the LAS object supplied is already ground classified}
+
 \item{res}{Resolution in meters}
+
+\item{h_cutoff}{Ground and shrub points are removed when calculating metrics such as SD, skew and kurtosis. This represents the cutoff height, 1.3m by default (see Shokirov et al. (2023)).}
+
+\item{gap_thres}{Threshold for calculating gap fraction. Default at 2m.}
 
 \item{mcc_s}{For MCC ground classification, see support document for details}
 
 \item{mcc_t}{For MCC ground classification, see support document for details}
-
-\item{cov_grid}{Resolution of grid when tallying pixels when calculating canopy cover}
 
 \item{zmax}{Approximate maximum height of trees}
 
@@ -39,13 +44,15 @@ LiDAR_metrics(
 
 \item{L1_range}{Height boundaries when defining first height layer (same for L2/L3)}
 
-\item{metrics}{Metrics to calculate. Defaults to "shokirov", but could be any subset of c("maxH", "meanH", "stdH", "skewH", "kurH", "p_05", "p_10", "p_25", "p_50", "p_75", "p_90", "p_95", "p_99", "VCI_2", "VCI_5", "VCI_10", "VCI_15", "VCI_20", "Cov", "height_cv", "canopy_roughness", "canopy_shannon", "Tvolume", "vlayer_L1", "vlayer_L2", "vlayer_L3", "meanH_L1", "sdH_L1", "meanH_L2", "sdH_L2", "meanH_L3", "sdH_L3", "vci_L1", "vci_L2", "vci_L3")}
+\item{metrics}{Metrics to calculate. Defaults to "all", but could be any subset of c("lidar_maxH", "lidar_meanH", "lidar_stdH", "lidar_skewH", "lidar_kurH", "lidar_p_05", "lidar_p_10", "lidar_p_25", "lidar_p_50", "lidar_p_75", "lidar_p_90", "lidar_p_95", "lidar_p_999", "lidar_vci_2m", "lidar_vci_5m", "lidar_vci_10m", "lidar_vci_15m", "lidar_vci_20m", "lidar_Cov","lidar_gapFrac", "lidar_grndFrac", "lidar_height_cv","lidar_rcv","lidar_rms", "lidar_canopy_shannon", "lidar_Tvolume", "lidar_vlayer_L1", "lidar_vlayer_L2", "lidar_vlayer_L3", "lidar_meanH_L1", "lidar_sdH_L1", "lidar_meanH_L2", "lidar_sdH_L2", "lidar_meanH_L3", "lidar_sdH_L3", "lidar_vci_L1", "lidar_vci_L2", "lidar_vci_L3")}
+
+\item{cov_grid}{Resolution of grid when tallying pixels when calculating canopy cover}
 }
 \value{
 A SpatRaster of metrics, each band being one metric, metric name in band name
 }
 \description{
-This function is used to calculate various LiDAR metrics used in ecology. The function takes LAS or LAScatalog objects created with the lidR package as inputs and returns a multi-layered terra SpatRaster, with each band corresponding to a metric. The choice of metrics, band names, and definitions are mostly based on Shokirov et al. (2023), with some minor changes being made for metrics that were not clearly defined in the paper. Notably, the roughness_L1, roughness_L2, roughness_L3 have not been included in the current edition.
+This function is used to calculate various LiDAR metrics used in ecology. The function takes LAS or LAScatalog objects created with the lidR package as inputs and returns a multi-layered terra SpatRaster, with each band corresponding to a metric. The choice of metrics, band names, and definitions are mostly based on Shokirov et al. (2023), with the exception of canopy_roughness, roughness_L1, roughness_L2, and roughness_L3, which are not included in the current edition.
 }
 \details{
 Shokirov, S. et al. (2023) ‘Habitat highs and lows: Using terrestrial and UAV LiDAR for modelling avian species richness and abundance in a restored woodland’, Remote Sensing of Environment. Elsevier, 285, p. 113326. doi: 10.1016/J.RSE.2022.113326.
