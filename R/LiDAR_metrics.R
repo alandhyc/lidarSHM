@@ -1,8 +1,6 @@
 #' LiDAR Metrics Function
 #'
-#' This function is used to calculate various LiDAR metrics used in ecology. The function takes LAS or LAScatalog objects created with the lidR package as inputs and returns a multi-layered terra SpatRaster, with each band corresponding to a metric. The choice of metrics, band names, and definitions are mostly based on Shokirov et al. (2023), with the exception of canopy_roughness, roughness_L1, roughness_L2, and roughness_L3, which are not included in the current edition.
-#'
-#' Shokirov, S. et al. (2023) ‘Habitat highs and lows: Using terrestrial and UAV LiDAR for modelling avian species richness and abundance in a restored woodland’, Remote Sensing of Environment. Elsevier, 285, p. 113326. doi: 10.1016/J.RSE.2022.113326.
+#' This function is used to calculate various LiDAR metrics used in ecology. The function takes LAS or LAScatalog objects created with the lidR package as inputs and returns a multi-layered terra SpatRaster, with each band corresponding to a metric.
 #'
 #' @param las A LAS or LAScatalog object
 #' @param ground_classified True if the LAS object supplied is already ground classified
@@ -215,7 +213,7 @@ LiDAR_metrics<-function(las,
 
 
     #7. Canopy cover (cov) ####
-    #For each pixel, the area of 0.25m (or cov_grid) pixels being canopy (max_z>1.3) is divided by the total area of the pixel
+    #For each pixel, we divide the number of first returns >1.3m with total number of first returns
 
     las_first<-lidR::filter_first(las)
 
