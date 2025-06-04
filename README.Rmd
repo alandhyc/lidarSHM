@@ -15,7 +15,7 @@ The package has three main functions:
 
 2. `CHM_metrics` calculates a number of useful structural metrics from a canopy height model or shrub height model in one single step. The function takes a CHM SpatRaster and a vector of metric names; returns a SpatRaster with multiple layers (names of layers corresponding to metric names). Definitions of metrics are based on Zhang et al. (2024) with several minor modifications and additions.
 
-3. `liDAR_metrics` calculates a number of useful structural metrics from point clouds in one single step. The function takes either a LAS or LAScatalog object created with the `lidR::` package as inputs. If a `LAS` object is supplied, the function returns a multi-layered SpatRaster, with layers corresponding to metrics users requested. Alternatively, if a `LAScatalog` object is supplied, it writes the SpatRasters as `.tif` files in folder specified by `opt_output_files()`. By default, the function performs mcc ground classification, but users could also supply a ground-classified point cloud if they want to skip this time-consuming step or prefer another ground classification algorithm. For the function to operate properly, las@data should have the columns named `Z` (height), `ReturnNumber`, `NumberOfReturns`, and `ScanAngleRank` (angle in degrees). The last two are specifically used for ePAI calculations. The definitions and names of metrics are mostly based on Shokirov et al. (2023). 
+3. `liDAR_metrics` calculates a number of useful structural metrics from point clouds in one single step. The function takes either a LAS or LAScatalog object created with the `lidR::` package as inputs. If a `LAS` object is supplied, the function returns a multi-layered SpatRaster, with layers corresponding to metrics users requested. Alternatively, if a `LAScatalog` object is supplied, it writes the SpatRasters as `.tif` files in folder specified by `opt_output_files()`. By default, the function performs mcc ground classification, but users could also supply a ground-classified point cloud if they want to skip this time-consuming step or prefer another ground classification algorithm. For the function to operate properly, `las@data` should have the columns named `Z` (height), `ReturnNumber`, `NumberOfReturns`, and `ScanAngleRank` (angle in degrees). The last two are specifically used for ePAI calculations. The definitions and names of metrics are mostly based on Shokirov et al. (2023). 
 
 ## List of metrics
 
@@ -54,6 +54,7 @@ Calculating CHM metrics from a CHM.
 ```{r,eval=F}
 
 library(terra)
+library(lidarSHM)
 
 #
 
@@ -85,6 +86,7 @@ Applying the function across a `LAS` object
 ```{r, eval = F}
 
 library(lidR)
+library(lidarSHM)
 
 las<-readLAS("/path/to/las/file.las")
 
@@ -134,7 +136,7 @@ Alternatively, we could apply the function to a `LAScatalog` object with paralle
 ```{r, eval = F}
 
 library(lidR)
-library(lidRmetrics)
+library(lidarSHM)
 library(future)
 
 #Set up parallel computation

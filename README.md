@@ -31,7 +31,7 @@ The package has three main functions:
     classification, but users could also supply a ground-classified
     point cloud if they want to skip this time-consuming step or prefer
     another ground classification algorithm. For the function to operate
-    properly, <las@data> should have the columns named `Z` (height),
+    properly, `las@data` should have the columns named `Z` (height),
     `ReturnNumber`, `NumberOfReturns`, and `ScanAngleRank` (angle in
     degrees). The last two are specifically used for ePAI calculations.
     The definitions and names of metrics are mostly based on Shokirov et
@@ -96,6 +96,7 @@ Calculating CHM metrics from a CHM.
 
 ``` r
 library(terra)
+library(lidarSHM)
 
 #
 
@@ -125,6 +126,7 @@ Applying the function across a `LAS` object
 
 ``` r
 library(lidR)
+library(lidarSHM)
 
 las<-readLAS("/path/to/las/file.las")
 
@@ -172,7 +174,7 @@ parallel computing and output written to a folder.
 
 ``` r
 library(lidR)
-library(lidRmetrics)
+library(lidarSHM)
 library(future)
 
 #Set up parallel computation
