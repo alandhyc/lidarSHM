@@ -37,17 +37,10 @@ The package has three main functions:
     The definitions and names of metrics are mostly based on Shokirov et
     al. (2023).
 
-References: Zhang, B., Fischer, F.J., Prober, S.M., Yeoh, P.B., Gosper,
-C.R., Zdunic, K. and Jucker, T. (2024), Robust retrieval of forest
-canopy structural attributes using multi-platform airborne LiDAR. Remote
-Sens Ecol Conserv, 10: 725-742. <https://doi.org/10.1002/rse2.398>
-
-Shokirov, S. et al. (2023) ‘Habitat highs and lows: Using terrestrial
-and UAV LiDAR for modelling avian species richness and abundance in a
-restored woodland’, Remote Sensing of Environment. Elsevier, 285,
-p. 113326. doi: 10.1016/J.RSE.2022.113326.
-
 ## List of metrics
+
+Some of the groupings and definitions are derived from Zhang et
+al. (2024) and Shokirvo et al. (2023).
 
 | Type | Derived.from | Metric | Code | Description | Function |
 |:---|:---|:---|:---|:---|:---|
@@ -218,6 +211,18 @@ LiDAR_metrics(las,
 
 Evie Huhtala for providing part of the code in the `CHM_metrics()`
 function
+
+## References
+
+Zhang, B., Fischer, F.J., Prober, S.M., Yeoh, P.B., Gosper, C.R.,
+Zdunic, K. and Jucker, T. (2024), Robust retrieval of forest canopy
+structural attributes using multi-platform airborne LiDAR. Remote Sens
+Ecol Conserv, 10: 725-742. <https://doi.org/10.1002/rse2.398>
+
+Shokirov, S. et al. (2023) ‘Habitat highs and lows: Using terrestrial
+and UAV LiDAR for modelling avian species richness and abundance in a
+restored woodland’, Remote Sensing of Environment. Elsevier, 285,
+p. 113326. doi: 10.1016/J.RSE.2022.113326.
 
 ## Contact
 
