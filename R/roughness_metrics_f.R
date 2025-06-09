@@ -12,7 +12,7 @@ roughness_metrics_f<-function(Z,shannon_cut){
 
   #Robust coefficient of variation
 
-  RCV <- IQR(Z,na.rm = T) / median(Z, na.rm = T)
+  RCV <- stats::IQR(Z,na.rm = T) / median(Z, na.rm = T)
 
   #Root mean square of LiDAR
 
