@@ -71,7 +71,7 @@ LiDAR_metrics<-function(las,
 
   additional_metrics<-c()
 
-  if(metrics == "all"){
+  if("all" %in% metrics){
     metric_names<-metric_names
   } else {
     metric_names<-metrics
