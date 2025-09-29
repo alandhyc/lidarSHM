@@ -216,6 +216,11 @@ function
 
 ## References
 
+### Shrub Height Model (SHM) pipeline (preprint)
+Chan, A.H.Y., Gullett, P.R., Flynn, W.R.M., Wakefield, L., Forrest, C., Stuart, I., Cowie, N.R., Hancock, M.H. and Coomes, D.A. (2025) Shrub height model (SHM): Uncovering shrub structure with airborne LiDAR. Available at SSRN: <https://ssrn.com/abstract=5527379> or <http://dx.doi.org/10.2139/ssrn.5527379>
+
+### Other references
+
 Zhang, B., Fischer, F.J., Prober, S.M., Yeoh, P.B., Gosper, C.R.,
 Zdunic, K. and Jucker, T. (2024), Robust retrieval of forest canopy
 structural attributes using multi-platform airborne LiDAR. Remote Sens
