@@ -10,8 +10,8 @@ lidar point clouds and canopy height models.
 
 The package has three main functions:
 
-1.  `lidar_SHM` (in development) calculates a shrub height model (SHM)
-    from lidar point cloud data.
+1.  `lidar_SHM` calculates a shrub height model (SHM)
+    from lidar point cloud data. The function takes a lidar point cloud and returns a raster showing shurb heights.
 
 2.  `CHM_metrics` calculates a number of useful structural metrics from
     a canopy height model or shrub height model in one single step. The
