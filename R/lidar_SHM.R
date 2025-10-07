@@ -46,7 +46,7 @@ lidar_SHM<-function(las,
       #Remove trees based on a threshold called "max_shrub_ht"
 
       las<-lidR::filter_poi(las,Z<max_shrub_ht)
-      las<-lidR::filter_poi(las,Z>(-1)) #Added to remove artifacts
+      #las<-lidR::filter_poi(las,Z>(-1)) #Added to remove artifacts
 
       #Add an attribute that indicates how much we want to stretch
 
