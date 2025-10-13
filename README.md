@@ -59,6 +59,67 @@ devtools::install_github("alandhyc/lidarSHM",force = T)
 
 ## Examples
 
+### lidar_SHM
+
+Creating a shrub height model (SHM) from point cloud in LAS format. The DTM is only used for tree removal and will not affect the ground classification, so quality is not critical, but we recommend supplying something with a coarser resolution than the crown width of shrubs in the area. In the Cairngorms, a 2m resolution DTM worked well.
+
+``` r
+library(terra)
+library(lidarSHM)
+
+las<-readLAS("/path/to/las/file.las")
+DTM_fp<-"/path/to/DTM/file.tif"
+
+SHM<-lidar_SHM(las = las, 
+               DTM_fp = DTM_fp,
+               DTM_res = 2.3,
+               max_shrub_ht = 1.025,
+               stretch_factor = 22,
+               mcc_s = 0.5,
+               mcc_t = 0.525,
+               shm_res = 0.2)
+
+
+```
+Alternatively, we could apply the function to a `LAScatalog` object with
+parallel computing and output written to a folder.
+
+```
+library(lidR)
+library(lidarSHM)
+library(future)
+
+#Set up parallel computation
+ncores<-5
+plan(multisession, workers = ncores)
+set_lidr_threads(ncores)
+
+#Load las catalog
+
+ctg<-readLAScatalog("/path/to/las/files")
+
+output_dir<-"/path/to/output/directory"
+
+opt_output_files(ctg)<-paste0(output_dir,"/{ORIGINALFILENAME}")
+opt_chunk_buffer(ctg)<-20 #Set a buffer
+
+#Get DTM filepath
+
+DTM_fp<-"/path/to/DTM/file.tif"
+
+SHM<-lidar_SHM(las = ctg, 
+               DTM_fp = DTM_fp,
+               DTM_res = 2.3,
+               max_shrub_ht = 1.025,
+               stretch_factor = 22,
+               mcc_s = 0.5,
+               mcc_t = 0.525,
+               shm_res = 0.2)
+
+
+```
+
+
 ### CHM_metrics
 
 Calculating CHM metrics from a CHM.
