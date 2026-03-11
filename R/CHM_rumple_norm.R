@@ -8,21 +8,21 @@
 #' @import tools
 #' @import geometry
 
-CHM_rumple<-function(chm_vals, chm_r){
+CHM_rumple_norm<-function(chm_vals, chm_r){
 
   if (length(chm_vals) < 3) return(NA)
 
-  ## Normalize by CHMmax (99.9th percentile)
-  #
-  #chm_max <- quantile(chm_vals, probs = 0.999, na.rm = TRUE)
-  #
-  #if (chm_max <= 0 || is.na(chm_max)) return(NA)
-  #
-  #chm_norm <- chm_r / chm_max
+  # Normalize by CHMmax (99.9th percentile)
+  
+  chm_max <- quantile(chm_vals, probs = 0.999, na.rm = TRUE)
+  
+  if (chm_max <= 0 || is.na(chm_max)) return(NA)
+  
+  chm_norm <- chm_r / chm_max
 
   #Calculate a slope raster
 
-  chm_norm_slope<-terra::terrain(chm_r,v = "slope")*pi/180
+  chm_norm_slope<-terra::terrain(chm_norm,v = "slope")*pi/180
 
   #Use 1/cos(x) to create an area raster assuming the resolution is 1m (it's going to cancel out anyway)
 
