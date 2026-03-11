@@ -22,7 +22,7 @@ CHM_rumple<-function(chm_vals, chm_r){
 
   #Calculate a slope raster
 
-  chm_norm_slope<-terra::terrain(chm_norm,v = "slope")*pi/180
+  chm_norm_slope<-terra::terrain(chm_r,v = "slope")*pi/180
 
   #Use 1/cos(x) to create an area raster assuming the resolution is 1m (it's going to cancel out anyway)
 
