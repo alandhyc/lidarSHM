@@ -26,7 +26,7 @@ CHM_metrics<-function(chm,agg,gap_thres = 2,metrics = "all",rumple_fast = T){
   chosen_metrics<-c("chm_maxH",
                     "chm_sdH","chm_height_cv","chm_rcv","chm_rms","chm_skewH","chm_kurH",
                     "chm_gapFrac","chm_grndFrac",
-                    "chm_rumple")
+                    "chm_rumple_norm")
 
   if(metrics != "all"){
     chosen_metrics<-chosen_metrics[which(chosen_metrics %in% metrics)]
@@ -226,14 +226,14 @@ CHM_metrics<-function(chm,agg,gap_thres = 2,metrics = "all",rumple_fast = T){
 
       if(rumple_fast==T){
 
-        cell$chm_rumple<-CHM_rumple(
+        cell$chm_rumple<-chm_rumple_norm(
           chm_vals = chm_values,
           chm_r = tchm
         )
 
       } else {
 
-        cell$chm_rumple<-CHM_rumple_point(
+        cell$chm_rumple<-CHM_rumple_norm_cvxhull(
           chm_vals = chm_values,
           chm_r = tchm
         )
