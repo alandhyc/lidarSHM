@@ -8,7 +8,7 @@
 #' @param chm A canopy height model in SpatRaster format
 #' @param agg Aggregation factor when calculating the metrics. For instance, if the original resolution is 1m and we want to calculate CHM metrics at 50m grid, agg=50.
 #' @param gap_thres This is the cutoff height when calculating gap fraction.
-#' @param metrics Metrics to calculate, defaults to "all" to calculate all metrics. Alternatively metrics could be specified by names: c("chm_maxH","chm_sdH","chm_height_cv","chm_rcv","chm_rms","chm_skewH","chm_kurH","chm_gapFrac","chm_grndFrac","chm_rumple_norm")
+#' @param metrics Metrics to calculate, defaults to "all" to calculate all metrics. Alternatively metrics could be specified by names: c("chm_maxH","chm_sdH","chm_height_cv","chm_rcv","chm_rms","chm_skewH","chm_kurH","chm_gapFrac","chm_grndFrac","chm_rumple")
 #' @param rumple_fast Logical. Whether to use a fast approximation of CHM surface area or triangulating point clouds.
 #' @return A SpatRaster of metrics, each band being one metric, metric name in band name
 #' @export
@@ -26,7 +26,7 @@ CHM_metrics<-function(chm,agg,gap_thres = 2,metrics = "all",rumple_fast = T){
   chosen_metrics<-c("chm_maxH",
                     "chm_sdH","chm_height_cv","chm_rcv","chm_rms","chm_skewH","chm_kurH",
                     "chm_gapFrac","chm_grndFrac",
-                    "chm_rumple_norm")
+                    "chm_rumple")
 
   if(metrics != "all"){
     chosen_metrics<-chosen_metrics[which(chosen_metrics %in% metrics)]
@@ -222,18 +222,18 @@ CHM_metrics<-function(chm,agg,gap_thres = 2,metrics = "all",rumple_fast = T){
 
     #Calculate rumple norm if requested
 
-    if("chm_rumple_norm" %in% chosen_metrics){
+    if("chm_rumple" %in% chosen_metrics){
 
       if(rumple_fast==T){
 
-        cell$chm_rumple_norm<-CHM_rumple_norm(
+        cell$chm_rumple<-CHM_rumple(
           chm_vals = chm_values,
           chm_r = tchm
         )
 
       } else {
 
-        cell$chm_rumple_norm<-CHM_rumple_norm_point(
+        cell$chm_rumple<-CHM_rumple_point(
           chm_vals = chm_values,
           chm_r = tchm
         )
@@ -259,7 +259,7 @@ CHM_metrics<-function(chm,agg,gap_thres = 2,metrics = "all",rumple_fast = T){
   chosen_metrics<-c("chm_maxH",
                     "chm_sdH","chm_height_cv","chm_rcv","chm_rms","chm_skewH","chm_kurH",
                     "chm_gapFrac","chm_grndFrac",
-                    "chm_rumple_norm")
+                    "chm_rumple")
 
   final_r<-lapply(chosen_metrics,function(field){
 
