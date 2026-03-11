@@ -8,18 +8,17 @@
 #' @import tools
 #' @import geometry
 #'
-CHM_rumple_point<-function(chm_vals, chm_r){
+CHM_rumple_norm_cvxhll<-function(chm_vals, chm_r){
 
   if (length(chm_vals) < 3) return(NA)
 
-  ## Normalize by CHMmax (99.9th percentile)
-  #
-  #chm_max <- quantile(chm_vals, probs = 0.999, na.rm = TRUE)
-  #
-  #if (chm_max <= 0 || is.na(chm_max)) return(NA)
-  #
-  #chm_norm <- chm_r / chm_max
-
+  # Normalize by CHMmax (99.9th percentile)
+  
+  chm_max <- quantile(chm_vals, probs = 0.999, na.rm = TRUE)
+  
+  if (chm_max <= 0 || is.na(chm_max)) return(NA)
+  
+  chm_norm <- chm_r / chm_max
 
 
   # Convert to XYZ point cloud
