@@ -267,7 +267,7 @@ al. (2024) and Shokirvo et al. (2023).
 | Canopy openness metrics | LiDAR | Gap fraction from LiDAR points | lidar_gapFrac | Proportion of lidar first returns \<2m in height | LiDAR_metrics |
 | Canopy openness metrics | CHM | Gap fraction from CHM | chm_grndFrac | Proportion of pixels \<0.5m in height | CHM_metrics |
 | Canopy openness metrics | LiDAR | Gap fraction from LiDAR points | lidar_grndFrac | Proportion of lidar first returns classified as ground | LiDAR_metrics |
-| Vegetation complexity metrics | CHM | Normalised rumple index | chm_rumple_norm | Ratio of canopy surface area to projected ground area derived from a height-normalized CHM | CHM_metrics |
+| Vegetation complexity metrics | CHM | Rumple index | chm_rumple | Ratio of canopy surface area to projected ground area derived from a height-normalized CHM | CHM_metrics |
 | Vegetation complexity metrics | LiDAR | Effective plant area index (m2/m2) | lidar_ePAI | Estimating surface area of plant material. In LiDAR contexts this is related to the extinction coefficient in Beer Lambert law. See Kwak et al. (2010) and Zhu et al. (2020). | LiDAR_metrics |
 | Vegetation complexity metrics | LiDAR | Vertical complexity index | lidar_vci_2m, lidar_vci_5m, lidar_vci_10m, lidar_vci_15m, lidar_vci_20m | Vertical complexity indexes (VCI) at 2 m, 5 m, 10 m, 15 m, 20 m height bins, (points \> 1.3 m). | LiDAR_metrics |
 |  |  |  |  | VCI = (∑i=1HB\[(pi ln (pi))\])/ ln (HB) |  |
