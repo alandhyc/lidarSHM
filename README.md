@@ -264,7 +264,7 @@ al. (2024) and Shokirvo et al. (2023).
 | Height distribution metrics | LiDAR | Kurtosis of LiDAR point cloud | lidar_kurH | Kurtosis of canopy height (points \> 1.3 m). Negative kurtosis means the distribution of points centered around the mean (mid-canopy is dominant). Positive kurtosis means the point distribution is heavy on tails and less around the mean (lower and upper canopy is dominant). | LiDAR_metrics |
 | Canopy openness metrics | LiDAR | Canopy cover | lidar_Cov | Fraction of canopy cover, (Fraction of first returns \> 1.3 m) | LiDAR_metrics |
 | Canopy openness metrics | CHM | Gap fraction from CHM | chm_gapFrac | Proportion of pixels \<2m height | CHM_metrics |
-| Canopy openness metrics | LiDAR | Gap fraction from LiDAR points | lidar_gapFrac | Proportion of lidar first returns \<2m in height | LiDAR_metrics |
+| Canopy openness metrics | LiDAR | Gap fraction from LiDAR points | lidar_gapFrac | Proportion of lidar returns \<2m in height with scan angle correction | LiDAR_metrics |
 | Canopy openness metrics | CHM | Gap fraction from CHM | chm_grndFrac | Proportion of pixels \<0.5m in height | CHM_metrics |
 | Canopy openness metrics | LiDAR | Gap fraction from LiDAR points | lidar_grndFrac | Proportion of lidar first returns classified as ground | LiDAR_metrics |
 | Vegetation complexity metrics | CHM | Rumple index | chm_rumple | Ratio of canopy surface area to projected ground area derived from a CHM | CHM_metrics |
