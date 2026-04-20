@@ -236,13 +236,14 @@ LiDAR_metrics<-function(las,
 
 
     # 8. Gap fraction ####
+    # Modified to include angle correction.
 
     if("lidar_gapFrac" %in% metric_names){
 
-      gapFrac_exp<-substitute(~gapFrac_f(Z,gap_thres),list(gap_thres = gap_thres))
+      gapFrac_exp<-substitute(~gapFrac_f(Z,ReturnNumber,NumberOfReturns,ScanAngleRank,gap_thres),list(gap_thres = gap_thres))
 
       gapFrac<-lidR::pixel_metrics(
-        las_first,
+        las,
         res = res,
         func = eval(gapFrac_exp)
       )
